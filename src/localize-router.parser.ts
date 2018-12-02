@@ -29,9 +29,9 @@ export abstract class LocalizeParser {
    * @param location
    * @param settings
    */
-  constructor(@Inject(TranslateService) private translate: TranslateService,
-              @Inject(Location) private location: Location,
-              @Inject(LocalizeRouterSettings) private settings: LocalizeRouterSettings) {
+  constructor(@Inject(TranslateService) protected translate: TranslateService,
+              @Inject(Location) protected location: Location,
+              @Inject(LocalizeRouterSettings) protected settings: LocalizeRouterSettings) {
   }
 
   /**
@@ -249,7 +249,7 @@ export abstract class LocalizeParser {
    * @returns {string}
    * @private
    */
-  private _getBrowserLang(): string {
+  protected _getBrowserLang(): string {
     return this._returnIfInLocales(this.translate.getBrowserLang());
   }
 
