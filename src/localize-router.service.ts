@@ -46,35 +46,28 @@ export class LocalizeRouterService {
       )
       .subscribe(this._routeChanged());
   }
-
-  /**
-   * Change language and navigate to translated route
-   * @param lang
+/**
+   * Extracts new segment value based on routeConfig and url
+   * @param snapshot
+   * @returns {string}
    */
-  changeLanguage(lang: string): void {
-    if (lang !== this.parser.currentLang) {
-      const rootSnapshot: ActivatedRouteSnapshot = this.router.routerState.snapshot.root;
-
-      this.parser.translateRoutes(lang)
-        .pipe(
-          // set new routes to router
-          tap(() => this.router.resetConfig(this.parser.routes))
-        )
-        .subscribe(() => {
-          const urlSegments = this.traverseSnapshot(rootSnapshot, true)
-            .filter((path: string, i: number) => {
-              return !i || path; // filter out empty paths
-            });
-
-          const navigationExtras: NavigationExtras = {
-            ...rootSnapshot.queryParamMap.keys.length ? { queryParams: rootSnapshot.queryParams } : {},
-            ...rootSnapshot.fragment ? { fragment: rootSnapshot.fragment } : {}
-          };
-
-          // use navigate to keep extras unchanged
-          this.router.navigate(urlSegments, navigationExtras);
-        });
+  private parseSegmentValue(snapshot: ActivatedRouteSnapshot): string {
+    if (snapshot.routeConfig) {
+      if (snapshot.routeConfig.path === '**') {
+        return this.parser.translateRoute(snapshot.url
+          .filter((segment: UrlSegment) => segment.path)
+          .map((segment: UrlSegment) => segment.path)
+          .join('/'));
+      } else if (snapshot.routeConfig.data && snapshot.routeConfig.data.localizeRouter) {
+        const subPathSegments = snapshot.routeConfig.data.localizeRouter.path.split('/');
+        return subPathSegments
+          .map((s: string, i: number) => s.indexOf(':') === 0 ?
+            snapshot.url[i].path :
+            this.parser.translateRoute(s))
+          .join('/');
+      }
     }
+    return '';
   }
 
   /**
